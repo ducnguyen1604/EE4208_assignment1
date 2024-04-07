@@ -48,18 +48,33 @@ def detector(img):
     global latest_cropped_face
     results = face_model(img, verbose=False)[0]
     faceList = results.boxes.data.tolist()
-    if not faceList:
-        latest_cropped_face = None
-    else:
+    
+    # Initialize variables to keep track of the largest face
+    largest_area = 0
+    largest_face = None
+    largest_face_coords = None
+
+    if faceList:
         for result in faceList:
             x1, y1, x2, y2, score, class_id = result
             if score > threshold:
-                latest_cropped_face = img[int(y1):int(y2), int(x1):int(x2)]
-                img = cv2.rectangle(img, (int(x1), int(y1)), (int(x2), int(y2)), default_rgb, 4)
-                img = cv2.putText(img, results.names[int(class_id)].upper(), (int(x1), int(y1 - 10)),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1.3, default_rgb, 2, cv2.LINE_AA)
+                face_area = (x2 - x1) * (y2 - y1)
+                if face_area > largest_area:
+                    largest_area = face_area
+                    largest_face = img[int(y1):int(y2), int(x1):int(x2)]
+                    largest_face_coords = (int(x1), int(y1), int(x2), int(y2), score, class_id)
         
+        if largest_face is not None:
+            latest_cropped_face = largest_face
+            x1, y1, x2, y2, score, class_id = largest_face_coords
+            img = cv2.rectangle(img, (x1, y1), (x2, y2), default_rgb, 4)
+            img = cv2.putText(img, results.names[int(class_id)].upper(), (x1, y1 - 10),
+                              cv2.FONT_HERSHEY_SIMPLEX, 1.3, default_rgb, 2, cv2.LINE_AA)
+    else:
+        latest_cropped_face = None
+    
     return img
+
 
 @app.route('/video')
 def frame_gen():
@@ -77,7 +92,7 @@ def latest_face():
             return Response("No face detected yet.", status=404)
     except Exception as e:
         logging.error(f"An error occurred: {e}")
-        logging.debug(traceback.format_exc())  # This prints the full traceback
+        logging.debug(traceback.format_exc())  
         return Response("An internal server error occurred.", status=500)
 
 @app.route('/')
