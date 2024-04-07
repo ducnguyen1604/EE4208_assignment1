@@ -4,24 +4,34 @@ import "./App.css";
 import { AiOutlineHome } from "react-icons/ai";
 import VideoStream from "./VideoStream";
 import axios from "axios";
+import unknownImg from "./unknown.jpg";
 
 function App() {
   const [latestFaceUrl, setLatestFaceUrl] = useState("");
+  const [faceDetected, setFaceDetected] = useState("No Face Detected");
 
   const updateFaceInformation = async () => {
     try {
       const response = await axios({
         method: "get",
         url: "http://localhost:5000/latest_face",
-        responseType: "blob", // Important to handle images
+        responseType: "blob",
       });
 
-      // Create a URL for the blob
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      setLatestFaceUrl(url);
+      if (response.status === 200) {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        if (latestFaceUrl !== url) {
+          setLatestFaceUrl(url);
+        }
+        setFaceDetected("Face Detected");
+      } else if (response.status === 404) {
+        setFaceDetected("No Face Detected");
+        setLatestFaceUrl(unknownImg);
+      }
     } catch (error) {
       console.error("Failed to fetch latest face", error);
-      // Handle error or set a default image
+      setFaceDetected("No Face Detected");
+      setLatestFaceUrl(unknownImg);
     }
   };
   return (
@@ -38,7 +48,7 @@ function App() {
         <div className=" w-1/3 flex flex-col">
           <div className="bg-white p-3 rounded-md mb-2 flex-grow">
             <div className="flex flex-col justify-between items-center h-full bg-white p-3">
-              <div className="bg-black border-4 border-purple-500 h-40 w-40 mb-3 rounded-md">
+              <div className="bg-black border-4 border-purple-500 h-64 w-64 mb-3 rounded-md">
                 {latestFaceUrl && (
                   <img
                     src={latestFaceUrl}
@@ -48,10 +58,7 @@ function App() {
                 )}
               </div>
               <div className="text-center mb-3">
-                <div className="flex justify-center">
-                  <p className="">Classified: </p>
-                  <p className="font-bold"> Human</p>
-                </div>
+                <p className="font-bold text-xl">{faceDetected}</p>
               </div>
               <button
                 onClick={updateFaceInformation}
@@ -62,7 +69,7 @@ function App() {
             </div>
           </div>
 
-          <div className="bg-white p-3 mt-2 rounded-md">
+          {/* <div className="bg-white p-3 mt-2 rounded-md">
             <div className="relative p-4 flex flex-col h-64">
               <div className="flex-grow flex flex-col items-center justify-startpx-2">
                 <button className="bg-purple-500 text-white p-2 mt-1 mb-2 w-full rounded-md">
@@ -82,7 +89,7 @@ function App() {
                 </button>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
