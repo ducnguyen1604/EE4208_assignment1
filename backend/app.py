@@ -21,9 +21,8 @@ CORS(app)
 #net = cv2.dnn.readNetFromCaffe(configFile, modelFile)
 
 current_dir = os.getcwd()
-# face_model = YOLO(current_dir+'/models/scratch_ee4208.pt')
-# face_model = YOLO(current_dir+'/models/bests.pt')
-face_model = YOLO(current_dir+'/models/scratch2.pt')
+face_model = YOLO(current_dir+'/models/scratch2.pt') # the best one
+# face_model = YOLO(current_dir+'/models/scratch_last2.pt')
 default_rgb = (255,255,255)
 threshold = 0.2
 
