@@ -72,7 +72,6 @@ def detector(img):
                               cv2.FONT_HERSHEY_SIMPLEX, 1.3, default_rgb, 2, cv2.LINE_AA)
     else:
         latest_cropped_face = None
-    
     return img
 
 

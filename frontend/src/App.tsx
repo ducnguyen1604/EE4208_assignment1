@@ -15,15 +15,20 @@ function App() {
       const response = await axios({
         method: "get",
         url: "http://localhost:5000/latest_face",
-        responseType: "blob",
+        responseType: "json", // Change responseType to 'json'
       });
+      console.log(response.data);
 
       if (response.status === 200) {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        if (latestFaceUrl !== url) {
-          setLatestFaceUrl(url);
+        const base64Image = response.data.image;
+        const recognizedName = response.data.recognized_name; // Capture the recognized name
+        const imageUrl = `data:image/jpeg;base64,${base64Image}`;
+
+        if (latestFaceUrl !== imageUrl) {
+          setLatestFaceUrl(imageUrl); // Update the state with the new image URL
         }
-        setFaceDetected("Face Detected");
+
+        setFaceDetected(`Face Detected: ${recognizedName}`); // Update the message to include recognition info
       } else if (response.status === 404) {
         setFaceDetected("No Face Detected");
         setLatestFaceUrl(unknownImg);
@@ -34,6 +39,7 @@ function App() {
       setLatestFaceUrl(unknownImg);
     }
   };
+
   return (
     <div className="bg-purple-500 p-5 min-h-screen flex flex-col justify-center">
       <div className="text-white text-lg font-bold text-center mb-5">
